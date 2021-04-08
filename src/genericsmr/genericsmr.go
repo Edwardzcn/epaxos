@@ -126,6 +126,9 @@ func (r *Replica) ConnectToPeers() {
 
 	go r.waitForPeerConnections(done)
 
+	//debug
+	log.Printf("Replica id %d try to connect to peers");
+
 	//connect to peers
 	for i := 0; i < int(r.Id); i++ {
 		for done := false; !done; {

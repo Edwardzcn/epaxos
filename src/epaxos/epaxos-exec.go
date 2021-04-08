@@ -14,10 +14,14 @@ const (
 	BLACK
 )
 
+// Note
+// 执行结构体，包装Replica 的
 type Exec struct {
 	r *Replica
 }
 
+// Note
+// 强连通分量结构体，包装指向实例节点的指针数组，染色标记
 type SCComponent struct {
 	nodes []*Instance
 	color int8
@@ -44,6 +48,8 @@ func (e *Exec) executeCommand(replica int32, instance int32) bool {
 
 var stack []*Instance = make([]*Instance, 0, 100)
 
+// Note
+// 寻找强连通分量
 func (e *Exec) findSCC(root *Instance) bool {
 	index := 1
 	//find SCCs using Tarjan's algorithm
@@ -51,6 +57,7 @@ func (e *Exec) findSCC(root *Instance) bool {
 	return e.strongconnect(root, &index)
 }
 
+// Tarjan算法
 func (e *Exec) strongconnect(v *Instance, index *int) bool {
 	v.Index = *index
 	v.Lowlink = *index

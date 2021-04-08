@@ -54,6 +54,10 @@ func main() {
 	log.Printf("Server starting on port %d\n", *portnum)
 
 	replicaId, nodeList := registerWithMaster(fmt.Sprintf("%s:%d", *masterAddr, *masterPort))
+	// debug
+	log.Printf("ReplicaId = %d",replicaId)
+	log.Printf("Register master #%s#:%d",*masterAddr,*masterPort)
+
 
 	if *doEpaxos {
 		log.Println("Starting Egalitarian Paxos replica...")
