@@ -38,9 +38,13 @@ const CHECKPOINT_PERIOD = 10000
 var cpMarker []state.Command
 var cpcounter = 0
 
+
+// Epaxos的Replica 结构体设计
 type Replica struct {
-	*genericsmr.Replica
-	prepareChan           chan fastrpc.Serializable
+	*genericsmr.Replica	// 通用的Replica信息的指针 // extends a generic Paxos replica
+
+
+	prepareChan           chan fastrpc.Serializable // prepare 阶段channel
 	preAcceptChan         chan fastrpc.Serializable
 	acceptChan            chan fastrpc.Serializable
 	commitChan            chan fastrpc.Serializable
@@ -77,11 +81,11 @@ type Replica struct {
 }
 
 type Instance struct {
-	Cmds           []state.Command
+	Cmds           []state.Command //该Instance的命令
 	ballot         int32
 	Status         int8
-	Seq            int32
-	Deps           [DS]int32
+	Seq            int32 // Seq和 Deps  见 Paper 362的定义
+	Deps           [DS]int32  //Instance 的依赖，表示Instance之间的相对顺序，DAG图中的出边
 	lb             *LeaderBookkeeping
 	Index, Lowlink int
 	bfilter        *bloomfilter.Bloomfilter
@@ -153,7 +157,9 @@ func NewReplica(id int, peerAddrList []string, thrifty bool, exec bool, dreply b
 		r.InstanceSpace[i] = make([]*Instance, 2*1024*1024)
 		r.crtInstance[i] = 0
 		r.ExecedUpTo[i] = -1
-		r.conflicts[i] = make(map[state.Key]int32, HT_INIT_SIZE)
+
+		// conflict 确定
+		r.conflicts[i] = make(map[state.Key]int32, HT_INIT_SIZE) // make第三个参数为预留分配空间 设定值为 200000
 	}
 
 	for bf_PT = 1; math.Pow(2, float64(bf_PT))/float64(MAX_BATCH) < BF_M_N; {
@@ -683,12 +689,19 @@ func (r *Replica) bcastCommit(replica int32, instance int32, cmds []state.Comman
                Helper functions
 *******************************************************************/
 
+
+// 函数名：clearHashtables
+// 参数：无
+// 功能：清空用于记录conflict的Hashtable，同初始化
 func (r *Replica) clearHashtables() {
 	for q := 0; q < r.N; q++ {
 		r.conflicts[q] = make(map[state.Key]int32, HT_INIT_SIZE)
 	}
 }
 
+// 函数名：updateCommitted
+// 参数：
+// 功能：
 func (r *Replica) updateCommitted(replica int32) {
 	for r.InstanceSpace[replica][r.CommittedUpTo[replica]+1] != nil &&
 		(r.InstanceSpace[replica][r.CommittedUpTo[replica]+1].Status == epaxosproto.COMMITTED ||
@@ -697,6 +710,8 @@ func (r *Replica) updateCommitted(replica int32) {
 	}
 }
 
+
+// 函数名： updateConflicts
 func (r *Replica) updateConflicts(cmds []state.Command, replica int32, instance int32, seq int32) {
 	for i := 0; i < len(cmds); i++ {
 		if d, present := r.conflicts[replica][cmds[i].K]; present {

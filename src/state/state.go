@@ -24,6 +24,7 @@ const NIL Value = 0
 
 type Key int64
 
+// 操作KV的命令接口
 type Command struct {
 	Op Operation
 	K  Key
