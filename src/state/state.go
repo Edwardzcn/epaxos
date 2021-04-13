@@ -1,10 +1,12 @@
 package state
 
 import (
+	"fmt"
 	"sync"
 	//"fmt"
 	//"code.google.com/p/leveldb-go/leveldb"
 	//"encoding/binary"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 type Operation uint8
@@ -35,6 +37,7 @@ type State struct {
 	mutex *sync.Mutex
 	Store map[Key]Value
 	//DB *leveldb.DB
+	DB *leveldb.DB
 }
 
 func InitState() *State {
@@ -47,8 +50,13 @@ func InitState() *State {
 
 	   return &State{d}
 	*/
+	//    TODO 每个状态保存在本地，如果单机模拟的话需要各自找一个路径
+	db, err := leveldb.OpenFile("/home/edwardzcn/epaxos/leveldb-data", nil)
+	if err != nil {
+		fmt.Printf("Leveldb open failed: %v \n",err)
+	}
 
-	return &State{new(sync.Mutex), make(map[Key]Value)}
+	return &State{new(sync.Mutex), make(map[Key]Value), db}
 }
 
 func Conflict(gamma *Command, delta *Command) bool {
