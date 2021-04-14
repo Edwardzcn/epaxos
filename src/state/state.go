@@ -3,9 +3,8 @@ package state
 import (
 	"fmt"
 	"sync"
-	//"fmt"
 	//"code.google.com/p/leveldb-go/leveldb"
-	//"encoding/binary"
+	"encoding/binary"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -35,7 +34,7 @@ type Command struct {
 
 type State struct {
 	mutex *sync.Mutex
-	Store map[Key]Value
+	// Store map[Key]Value
 	//DB *leveldb.DB
 	DB *leveldb.DB
 }
@@ -56,7 +55,8 @@ func InitState() *State {
 		fmt.Printf("Leveldb open failed: %v \n",err)
 	}
 
-	return &State{new(sync.Mutex), make(map[Key]Value), db}
+	// return &State{new(sync.Mutex), make(map[Key]Value), db}
+	return &State{new(sync.Mutex), db}
 }
 
 func Conflict(gamma *Command, delta *Command) bool {
@@ -83,28 +83,53 @@ func IsRead(command *Command) bool {
 	return command.Op == GET
 }
 
+
+// 底层操作的 Execute 是针对一个特定的状态来界定的
 func (c *Command) Execute(st *State) Value {
-	//fmt.Printf("Executing (%d, %d)\n", c.K, c.V)
-
+	// debug
+	fmt.Printf("Executing (%d, %d)\n", c.K, c.V)
 	//var key, value [8]byte
-
+	
 	//    st.mutex.Lock()
 	//    defer st.mutex.Unlock()
-
+	
 	switch c.Op {
 	case PUT:
 		/*
-		   binary.LittleEndian.PutUint64(key[:], uint64(c.K))
-		   binary.LittleEndian.PutUint64(value[:], uint64(c.V))
-		   st.DB.Set(key[:], value[:], nil)
+		binary.LittleEndian.PutUint64(key[:], uint64(c.K))
+		binary.LittleEndian.PutUint64(value[:], uint64(c.V))
+		st.DB.Set(key[:], value[:], nil)
 		*/
-
-		st.Store[c.K] = c.V
+		
+		// st.Store[c.K] = c.V
+		// Convert an int64 into a byte array in go
+		// https://stackoverflow.com/questions/35371385/how-can-i-convert-an-int64-into-a-byte-array-in-go
+		
+		// 由于 Command 中 key value的值是 int64 格式 需要做 transfer
+		// var key,val [8]byte
+		// binary.LittleEndian.PutUint64(key[:], uint64(c.K))
+		// binary.LittleEndian.PutUint64(val[:], uint64(c.V))
+		// 使用make来获得切片
+		key := make([]byte, 8)
+		val := make([]byte, 8)
+		binary.LittleEndian.PutUint64(key, uint64(c.K))
+		binary.LittleEndian.PutUint64(val, uint64(c.V))
+		st.DB.Put(key,val, nil)
+		
 		return c.V
-
+		
 	case GET:
-		if val, present := st.Store[c.K]; present {
-			return val
+		// if val, present := st.Store[c.K]; present {
+		// 	return val
+		// }
+		key := make([]byte, 8)
+		val := make([]byte, 8)
+		binary.LittleEndian.PutUint64(key, uint64(c.K))
+		if st.DB.Has(key,nil){
+			
+		} else {
+			// TODO 没有该键值的
+			return -1
 		}
 	}
 

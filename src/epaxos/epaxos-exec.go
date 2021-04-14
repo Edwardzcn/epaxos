@@ -27,6 +27,10 @@ type SCComponent struct {
 	color int8
 }
 
+
+// TODO 执行命令
+// 这里的Execute和State 里面 Command 的 Execute是什么关系
+// 这里  InstanceSpace 所以应该和 EPaxos里面的instance二维表格是对应的
 func (e *Exec) executeCommand(replica int32, instance int32) bool {
 	if e.r.InstanceSpace[replica][instance] == nil {
 		return false
@@ -115,12 +119,17 @@ func (e *Exec) strongconnect(v *Instance, index *int) bool {
 		list := stack[l:len(stack)]
 
 		//execute commands in the increasing order of the Seq field
+		// 作者在这里也注明了 执行命令
 		sort.Sort(nodeArray(list))
 		for _, w := range list {
+			// w 是 单个的 Instance
 			for w.Cmds == nil {
+				// 阻塞等待
 				time.Sleep(1000 * 1000)
 			}
 			for idx := 0; idx < len(w.Cmds); idx++ {
+				// 便利 这个instance里面的所有命令
+				// 这里的 Execute 对应的是 state.go 中 Commands 的 Execute
 				val := w.Cmds[idx].Execute(e.r.State)
 				if e.r.Dreply && w.lb != nil && w.lb.clientProposals != nil {
 					e.r.ReplyProposeTS(

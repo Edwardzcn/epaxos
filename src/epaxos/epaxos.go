@@ -81,7 +81,7 @@ type Replica struct {
 }
 
 type Instance struct {
-	Cmds           []state.Command //该Instance的命令
+	Cmds           []state.Command //该 Instance 的命令列表
 	ballot         int32
 	Status         int8
 	Seq            int32 // Seq和 Deps  见 Paper 362的定义
