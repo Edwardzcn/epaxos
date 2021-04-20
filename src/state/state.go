@@ -87,7 +87,13 @@ func IsRead(command *Command) bool {
 // 底层操作的 Execute 是针对一个特定的状态来界定的
 func (c *Command) Execute(st *State) Value {
 	// debug
-	fmt.Printf("Executing (%d, %d)\n", c.K, c.V)
+	switch c.Op {
+	case PUT:
+		fmt.Printf("Try Execute Command: PUT (%d, %d)\n", c.K, c.V)
+	case GET:
+		fmt.Printf("Try Execute Command: GET %d",c.K)
+	}
+
 	//var key, value [8]byte
 	
 	//    st.mutex.Lock()

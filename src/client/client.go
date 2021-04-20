@@ -91,6 +91,8 @@ func main() {
 				karray[i] = int64(43 + i)
 			}
 			r = rand.Intn(100)
+			// debug
+			fmt.Printf("random r=%d and writes=%d\n",r,writes)
 			if r < *writes {
 				put[i] = true
 			} else {
@@ -178,8 +180,12 @@ func main() {
 			args.CommandId = id
 			if put[i] {
 				args.Command.Op = state.PUT
+				// debug
+				fmt.Println("Command is PUT")
 			} else {
 				args.Command.Op = state.GET
+				// debug
+				// fmt.Println("Command is GET")
 			}
 			args.Command.K = state.Key(karray[i])
 			args.Command.V = state.Value(i)
