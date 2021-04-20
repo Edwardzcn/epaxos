@@ -2,4 +2,4 @@
 /bin
 *-*-replica*
 /leveldb-data
-/src/github.com
+/src/github.com/rogpeppe

@@ -126,12 +126,13 @@ func (c *Command) Execute(st *State) Value {
 		// val := make([]byte, 8)
 		binary.LittleEndian.PutUint64(key, uint64(c.K))
 		if flg,_ := st.DB.Has(key,nil); flg{
-			// TODO!!!!!!
 			val, _ := st.DB.Get(key,nil)
+			fmt.Printf("GET SUCCESS (%d,%d)\n",key,val)
 			// Value 相当于 int64转化
 			return Value(binary.LittleEndian.Uint64(val))
 		} else {
 			// TODO 没有该键值的
+			fmt.Printf("GET NOT FOUND\n")
 			return -1
 		}
 	}
