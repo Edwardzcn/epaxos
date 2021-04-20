@@ -115,6 +115,7 @@ func (c *Command) Execute(st *State) Value {
 		binary.LittleEndian.PutUint64(key, uint64(c.K))
 		binary.LittleEndian.PutUint64(val, uint64(c.V))
 		st.DB.Put(key,val, nil)
+		fmt.Printf("PUT (%d,%d)\n",c.K,c.V)
 		
 		return c.V
 		

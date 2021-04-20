@@ -66,13 +66,22 @@ func (master *Master) run() {
 	}
 	time.Sleep(2000000000)
 
+
+	// 这里显示fatal 出现故障
+	// 已解决 server 除了配置 master的address 也要配置自己的address
 	// connect to SMR servers
 	for i := 0; i < master.N; i++ {
 		var err error
 		addr := fmt.Sprintf("%s:%d", master.addrList[i], master.portList[i]+1000)
+		// TODO? +1000 是否需要修改
+		// debug
+		log.Printf("Dial addr %v\n",addr)
+		
 		master.nodes[i], err = rpc.DialHTTP("tcp", addr)
 		if err != nil {
+			log.Printf("Error: %v\n",err)
 			log.Fatalf("Error connecting to replica %d\n", i)
+			// debug
 		}
 		master.leader[i] = false
 	}
@@ -120,6 +129,9 @@ func (master *Master) Register(args *masterproto.RegisterArgs, reply *masterprot
 	index := nlen
 
 	addrPort := fmt.Sprintf("%s:%d", args.Addr, args.Port)
+	// debug
+	// log.Printf("(In Master Register) addrPort=%v\n",addrPort)
+	// 测试结果显示可以接收到其他node 的 dail 正确的 addrPort
 
 	for i, ap := range master.nodeList {
 		if addrPort == ap {
