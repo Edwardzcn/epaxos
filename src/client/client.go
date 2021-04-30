@@ -18,12 +18,15 @@ import (
 
 var masterAddr *string = flag.String("maddr", "", "Master address. Defaults to localhost")
 var masterPort *int = flag.Int("mport", 7087, "Master port.  Defaults to 7077.")
+
 // 请求总量
 var reqsNb *int = flag.Int("q", 5000, "Total number of requests. Defaults to 5000.")
 var writes *int = flag.Int("w", 100, "Percentage of updates (writes). Defaults to 100%.")
+
 // noLeader 配置
 var noLeader *bool = flag.Bool("e", false, "Egalitarian (no leader). Defaults to false.")
 var fast *bool = flag.Bool("f", false, "Fast Paxos: send message directly to all replicas. Defaults to false.")
+
 // 将全部请求分割为多轮
 var rounds *int = flag.Int("r", 1, "Split the total number of requests into this many rounds, and do rounds sequentially. Defaults to 1.")
 var procs *int = flag.Int("p", 2, "GOMAXPROCS. Defaults to 2")
@@ -65,7 +68,7 @@ func main() {
 
 	N = len(rlReply.ReplicaList)
 	// debug
-	fmt.Printf("N=%d\n",N)
+	fmt.Printf("N=%d\n", N)
 
 	servers := make([]net.Conn, N)
 	readers := make([]*bufio.Reader, N)
@@ -92,7 +95,7 @@ func main() {
 			}
 			r = rand.Intn(100)
 			// debug
-			fmt.Printf("random r=%d and writes=%d\n",r,writes)
+			fmt.Printf("random r=%d and writes=%d\n", r, writes)
 			if r < *writes {
 				put[i] = true
 			} else {
@@ -134,7 +137,7 @@ func main() {
 
 	var id int32 = 0
 	done := make(chan bool, N)
-	// 这里是初始化writer 传输的参数? id = 0 , 
+	// 这里是初始化writer 传输的参数? id = 0 ,
 	// 重申 Propose 的定义
 	// type Propose struct {
 	// 	*genericsmrproto.Propose
@@ -143,7 +146,6 @@ func main() {
 	args := genericsmrproto.Propose{id, state.Command{state.PUT, 0, 0}, 0}
 
 	before_total := time.Now()
-
 
 	// 轮数循环
 	for j := 0; j < *rounds; j++ {
@@ -203,8 +205,8 @@ func main() {
 			} else {
 				// 为真的情况
 				// debug
-				fmt.Printf("Fast Paxos debug: %d",*fast)
-				
+				fmt.Printf("Fast Paxos debug: %d", *fast)
+
 				//send to everyone
 				for rep := 0; rep < N; rep++ {
 					writers[rep].WriteByte(genericsmrproto.PROPOSE)
@@ -281,8 +283,7 @@ func main() {
 	master.Close()
 }
 
-
-// waitReplies 
+// waitReplies
 func waitReplies(readers []*bufio.Reader, leader int, n int, done chan bool) {
 	e := false
 

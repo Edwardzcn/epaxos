@@ -38,11 +38,9 @@ const CHECKPOINT_PERIOD = 10000
 var cpMarker []state.Command
 var cpcounter = 0
 
-
 // Epaxos的Replica 结构体设计
 type Replica struct {
-	*genericsmr.Replica	// 通用的Replica信息的指针 // extends a generic Paxos replica
-
+	*genericsmr.Replica // 通用的Replica信息的指针 // extends a generic Paxos replica
 
 	prepareChan           chan fastrpc.Serializable // prepare 阶段channel
 	preAcceptChan         chan fastrpc.Serializable
@@ -84,8 +82,8 @@ type Instance struct {
 	Cmds           []state.Command //该 Instance 的命令列表
 	ballot         int32
 	Status         int8
-	Seq            int32 // Seq和 Deps  见 Paper 362的定义
-	Deps           [DS]int32  //Instance 的依赖，表示Instance之间的相对顺序，DAG图中的出边
+	Seq            int32     // Seq和 Deps  见 Paper 362的定义
+	Deps           [DS]int32 //Instance 的依赖，表示Instance之间的相对顺序，DAG图中的出边
 	lb             *LeaderBookkeeping
 	Index, Lowlink int
 	bfilter        *bloomfilter.Bloomfilter
@@ -689,7 +687,6 @@ func (r *Replica) bcastCommit(replica int32, instance int32, cmds []state.Comman
                Helper functions
 *******************************************************************/
 
-
 // 函数名：clearHashtables
 // 参数：无
 // 功能：清空用于记录conflict的Hashtable，同初始化
@@ -710,7 +707,6 @@ func (r *Replica) updateCommitted(replica int32) {
 	}
 }
 
-
 // 函数名： updateConflicts
 func (r *Replica) updateConflicts(cmds []state.Command, replica int32, instance int32, seq int32) {
 	for i := 0; i < len(cmds); i++ {
@@ -719,8 +715,8 @@ func (r *Replica) updateConflicts(cmds []state.Command, replica int32, instance 
 				r.conflicts[replica][cmds[i].K] = instance
 			}
 		} else {
-            r.conflicts[replica][cmds[i].K] = instance
-        }
+			r.conflicts[replica][cmds[i].K] = instance
+		}
 		if s, present := r.maxSeqPerKey[cmds[i].K]; present {
 			if s < seq {
 				r.maxSeqPerKey[cmds[i].K] = seq

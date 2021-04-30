@@ -3,8 +3,10 @@ package state
 import (
 	"fmt"
 	"sync"
+
 	//"code.google.com/p/leveldb-go/leveldb"
 	"encoding/binary"
+
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -52,9 +54,9 @@ func InitState() *State {
 	//    TODO 每个状态保存在本地，如果单机模拟的话需要各自找一个路径
 	db, err := leveldb.OpenFile("/home/edwardzcn/epaxos/leveldb-data", nil)
 	if err != nil {
-		fmt.Printf("Leveldb open failed: %v \n",err)
+		fmt.Printf("Leveldb open failed: %v \n", err)
 	}
-
+	// return &State{new(sync.Mutex), make(map[Key]Value)}
 	// return &State{new(sync.Mutex), make(map[Key]Value), db}
 	return &State{new(sync.Mutex), db}
 }
@@ -83,7 +85,6 @@ func IsRead(command *Command) bool {
 	return command.Op == GET
 }
 
-
 // 底层操作的 Execute 是针对一个特定的状态来界定的
 func (c *Command) Execute(st *State) Value {
 	// debug
@@ -91,26 +92,26 @@ func (c *Command) Execute(st *State) Value {
 	case PUT:
 		fmt.Printf("Try Execute Command: PUT (%d, %d)\n", c.K, c.V)
 	case GET:
-		fmt.Printf("Try Execute Command: GET %d",c.K)
+		fmt.Printf("Try Execute Command: GET %d", c.K)
 	}
 
 	//var key, value [8]byte
-	
+
 	//    st.mutex.Lock()
 	//    defer st.mutex.Unlock()
-	
+
 	switch c.Op {
 	case PUT:
 		/*
-		binary.LittleEndian.PutUint64(key[:], uint64(c.K))
-		binary.LittleEndian.PutUint64(value[:], uint64(c.V))
-		st.DB.Set(key[:], value[:], nil)
+			binary.LittleEndian.PutUint64(key[:], uint64(c.K))
+			binary.LittleEndian.PutUint64(value[:], uint64(c.V))
+			st.DB.Set(key[:], value[:], nil)
 		*/
-		
+
 		// st.Store[c.K] = c.V
 		// Convert an int64 into a byte array in go
 		// https://stackoverflow.com/questions/35371385/how-can-i-convert-an-int64-into-a-byte-array-in-go
-		
+
 		// 由于 Command 中 key value的值是 int64 格式 需要做 transfer
 		// var key,val [8]byte
 		// binary.LittleEndian.PutUint64(key[:], uint64(c.K))
@@ -120,11 +121,13 @@ func (c *Command) Execute(st *State) Value {
 		val := make([]byte, 8)
 		binary.LittleEndian.PutUint64(key, uint64(c.K))
 		binary.LittleEndian.PutUint64(val, uint64(c.V))
-		st.DB.Put(key,val, nil)
-		fmt.Printf("PUT (%d,%d)\n",c.K,c.V)
-		
+		st.DB.Put(key, val, nil)
+		fmt.Printf("PUT (%d,%d)\n", c.K, c.V)
 		return c.V
-		
+
+		// st.Store[c.K] = c.V
+		// return c.V
+
 	case GET:
 		// if val, present := st.Store[c.K]; present {
 		// 	return val
@@ -132,9 +135,9 @@ func (c *Command) Execute(st *State) Value {
 		key := make([]byte, 8)
 		// val := make([]byte, 8)
 		binary.LittleEndian.PutUint64(key, uint64(c.K))
-		if flg,_ := st.DB.Has(key,nil); flg{
-			val, _ := st.DB.Get(key,nil)
-			fmt.Printf("GET SUCCESS (%d,%d)\n",key,val)
+		if flg, _ := st.DB.Has(key, nil); flg {
+			val, _ := st.DB.Get(key, nil)
+			fmt.Printf("GET SUCCESS (%d,%d)\n", key, val)
 			// Value 相当于 int64转化
 			return Value(binary.LittleEndian.Uint64(val))
 		} else {

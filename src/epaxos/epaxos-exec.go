@@ -27,7 +27,6 @@ type SCComponent struct {
 	color int8
 }
 
-
 // TODO 执行命令
 // 这里的Execute和State 里面 Command 的 Execute是什么关系
 // 这里  InstanceSpace 所以应该和 EPaxos里面的instance二维表格是对应的
